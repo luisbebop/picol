@@ -406,6 +406,18 @@ int picolCommandMath(struct picolInterp *i, int argc, char **argv, void *pd) {
     return PICOL_OK;
 }
 
+int picolCommandEqNe(struct picolInterp *i, int argc, char **argv, void *pd) {
+	char buf[64];
+	int ret;
+	if (argc != 3) return picolArityErr(i,argv[0]);
+	if (strcmp(argv[0],"eq") == 0 ) ret = !strcmp(argv[1],argv[2]);
+	else if (strcmp(argv[0],"ne") == 0) ret = strcmp(argv[1],argv[2]);
+	else ret = 0;
+	snprintf(buf,64,"%d",ret);
+	picolSetResult(i,buf);
+	return PICOL_OK;
+}
+
 int picolCommandSet(struct picolInterp *i, int argc, char **argv, void *pd) {
     if (argc != 3) return picolArityErr(i,argv[0]);
     picolSetVar(i,argv[1],argv[2]);
@@ -417,6 +429,21 @@ int picolCommandPuts(struct picolInterp *i, int argc, char **argv, void *pd) {
     if (argc != 2) return picolArityErr(i,argv[0]);
     printf("%s\n", argv[1]);
     return PICOL_OK;
+}
+
+int picolCommandRequire(struct picolInterp *i, int argc, char **argv, void *pd) {
+	char buf[1024*16];
+	FILE *fp;
+	int retcode; 
+	if (argc != 2) return picolArityErr(i,argv[0]);
+	fp = fopen(argv[1],"r");
+    if (!fp) {
+        perror("open"); exit(1);
+    }
+    buf[fread(buf,1,1024*16,fp)] = '\0';
+    fclose(fp);
+	if ((retcode = picolEval(i,buf)) != PICOL_OK) return retcode;
+	return PICOL_OK;
 }
 
 int picolCommandIf(struct picolInterp *i, int argc, char **argv, void *pd) {
@@ -526,6 +553,9 @@ void picolRegisterCoreCommands(struct picolInterp *i) {
     picolRegisterCommand(i,"continue",picolCommandRetCodes,NULL);
     picolRegisterCommand(i,"proc",picolCommandProc,NULL);
     picolRegisterCommand(i,"return",picolCommandReturn,NULL);
+	picolRegisterCommand(i,"eq",picolCommandEqNe,NULL);
+	picolRegisterCommand(i,"ne",picolCommandEqNe,NULL);
+	picolRegisterCommand(i,"require",picolCommandRequire,NULL);
 }
 
 int main(int argc, char **argv) {

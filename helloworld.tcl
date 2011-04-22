@@ -1,8 +1,12 @@
-proc hello {name nickname} 
-{
-	puts "Hello $name $nickname"
+proc say {string} {
+	puts $string
 }
 
-set name "john"
-set nickname "smith"
-hello $name "foobar"
+proc hello {name} 
+{
+	if {eq $name "luis"} {
+		puts "Hello my master $name"
+	} else {
+		say "Hello poor insignificant being $name"
+	}
+}
